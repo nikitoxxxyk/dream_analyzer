@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Django веб-приложение
+  web:
+    build: .
+    container_name: dream_web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=dream_project.settings
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    networks:
+      - dream_network
+
+  # Telegram бот
+  bot:
+    build: .
+    container_name: dream_bot
+    command: python bot.py
+    volumes:
+      - .:/app
+      - ./bot_debug.log:/app/bot_debug.log
+      - ./bot.log:/app/bot.log
+    depends_on:
+      - web
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+      - DJANGO_API_URL=http://web:8000/api/create-dream/
+      - DJANGO_API_BASE=http://web:8000/api/
+      - USER_DREAMS_URL=http://web:8000/api/user-dreams/
+      - LAST_DREAM_URL=http://web:8000/api/last-dream/
+    restart: unless-stopped
+    networks:
+      - dream_network
+
+  # PostgreSQL (опционально, вместо SQLite)
+  # postgres:
+  #   image: postgres:15
+  #   container_name: dream_postgres
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   environment:
+  #     - POSTGRES_DB=dream_db
+  #     - POSTGRES_USER=dream_user
+  #     - POSTGRES_PASSWORD=dream_password
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+  #   networks:
+  #     - dream_network
+
+volumes:
+  static_volume:
+  media_volume:
+  # postgres_data:
+
+networks:
+  dream_network:
+    driver: bridge

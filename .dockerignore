@@ -1,0 +1,15 @@
+venv
+venv_local
+__pycache__
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+*.log
+*.env.local
+.git
+.gitignore
+README.md
+.DS_Store
+temp_audio/*
+!temp_audio/.gitkeep
