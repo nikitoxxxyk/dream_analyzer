@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>🔑 Вход в систему</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label>👤 Имя пользователя:</label>
+            <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label>🔒 Пароль:</label>
+            <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;">
+        </div>
+        
+        {% if form.errors %}
+        <div style="color: red; margin-bottom: 15px;">
+            <p>❌ Неверное имя пользователя или пароль.</p>
+        </div>
+        {% endif %}
+        
+        <button type="submit" class="btn">Войти</button>
+    </form>
+    <p style="margin-top: 15px;">
+        Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+    </p>
+</div>
+{% endblock %}

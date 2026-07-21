@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Привязка Telegram | Dream Analyzer{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">🔗 Привязка Telegram аккаунта</h4>
+                </div>
+                <div class="card-body">
+                    
+                    {% if is_linked %}
+                    <div class="alert alert-success">
+                        <h5>✅ Telegram привязан!</h5>
+                        <p>
+                            <strong>ID:</strong> {{ telegram_id }}<br>
+                            {% if telegram_username %}
+                            <strong>Username:</strong> @{{ telegram_username }}<br>
+                            {% endif %}
+                            <strong>Статус бота:</strong> 
+                            <span class="badge bg-{{ is_bot_active|yesno:'success,warning' }}">
+                                {{ is_bot_active|yesno:'Активен,Не активен' }}
+                            </span>
+                        </p>
+                        <a href="{% url 'unlink_telegram' %}" class="btn btn-outline-danger btn-sm">
+                            Отвязать Telegram
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <h5>🔗 Привяжите Telegram для синхронизации снов</h5>
+                        <p>
+                            После привязки все сны, отправленные боту, будут автоматически 
+                            появляться в вашем личном кабинете на сайте.
+                        </p>
+                    </div>
+                    
+                    <div class="border p-4 rounded bg-light">
+                        <h5>📋 Инструкция:</h5>
+                        <ol>
+                            <li>Нажмите кнопку ниже для генерации токена</li>
+                            <li>Отправьте полученную команду вашему боту в Telegram</li>
+                            <li>Или перейдите по сгенерированной ссылке</li>
+                            <li>Бот подтвердит привязку автоматически</li>
+                        </ol>
+                        
+                        <form method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-telegram"></i> Сгенерировать токен привязки
+                            </button>
+                        </form>
+                        
+                        {% if messages %}
+                        <div class="mt-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message|safe }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            ← Вернуться в личный кабинет
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
