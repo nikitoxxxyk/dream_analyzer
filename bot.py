@@ -7,8 +7,9 @@ from dotenv import load_dotenv
 import requests 
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Application, MessageHandler, filters, ContextTypes, CommandHandler
-
+import re
 from voice_handler import voice_processor
+import requests
 
 load_dotenv()
 
@@ -139,20 +140,20 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ============================================
 # АСИНХРОННЫЕ ЗАПРОСЫ К API
 # ============================================
-async def make_api_request(url, method='GET', data=None):
-    """Универсальная функция для асинхронных запросов к API"""
-    try:
-        timeout = aiohttp.ClientTimeout(total=30)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            if method == 'GET':
-                async with session.get(url) as response:
-                    return response
-            elif method == 'POST':
-                async with session.post(url, json=data) as response:
-                    return response
-    except aiohttp.ClientError as e:
-        logger.error(f"Ошибка API запроса: {e}")
-        return None
+# async def make_api_request(url, method='GET', data=None):
+#     """Универсальная функция для асинхронных запросов к API"""
+#     try:
+#         timeout = aiohttp.ClientTimeout(total=30)
+#         async with aiohttp.ClientSession(timeout=timeout) as session:
+#             if method == 'GET':
+#                 async with session.get(url) as response:
+#                     return response
+#             elif method == 'POST':
+#                 async with session.post(url, json=data) as response:
+#                     return response
+#     except aiohttp.ClientError as e:
+#         logger.error(f"Ошибка API запроса: {e}")
+#         return None
 
 async def history(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Показывает историю снов пользователя"""
@@ -226,6 +227,11 @@ async def last_dream(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ============================================
 # ОБРАБОТЧИК ГОЛОСОВЫХ СООБЩЕНИЙ
 # ============================================
+def escape_markdown(text):
+    """Экранирует спецсимволы для Telegram Markdown"""
+    escape_chars = r'_*[]()~`>#+-=|{}.!'
+    return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
+
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка голосовых сообщений"""
     user_id = update.message.from_user.id
@@ -261,39 +267,62 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         
         await status_message.edit_text(
-            f"✅ Распознано:\n\n*{text}*\n\n"
-            f"📝 Отправляю на анализ нейросети...",
-            parse_mode='Markdown'
+            f"✅ Распознано:\n\n{text}\n\n📝 Отправляю на анализ нейросети..."
         )
         
-        # Асинхронный запрос к API
-        response = await make_api_request(
-            DJANGO_API_URL, 
-            method='POST',
-            data={'user_id': user_id, 'text': text}
-        )
-        
-        if response and response.status == 200:
-            result = await response.json()
-            interpretation = result.get('interpretation', 'Анализ не получен')
+        # --- ИСПОЛЬЗУЕМ requests ВМЕСТО aiohttp ---
+        try:
+            logger.info(f"📤 Отправка POST на {DJANGO_API_URL}")
+            response = requests.post(
+                DJANGO_API_URL,
+                json={'user_id': user_id, 'text': text},
+                timeout=30
+            )
+            logger.info(f"📥 Статус ответа: {response.status_code}")
+            logger.info(f"📥 Тело ответа (первые 200 символов): {response.text[:200]}...")
             
-            await update.message.reply_text(
-                f"✨ *Анализ голосового сна завершен!*\n\n"
-                f"*🎤 Распознанный текст:*\n{text}\n\n"
-                f"*🔮 Интерпретация:*\n{interpretation}",
-                parse_mode='Markdown'
+            if response.status_code == 200:
+                result = response.json()
+                interpretation = result.get('interpretation', 'Анализ не получен')
+                
+                # Отправляем результат (без Markdown)
+                await update.message.reply_text(
+                    f"✨ Анализ голосового сна завершен!\n\n"
+                    f"🎤 Распознанный текст:\n{text}\n\n"
+                    f"🔮 Интерпретация:\n{interpretation}"
+                )
+                
+                await status_message.delete()
+                logger.info(f"✅ Голосовой сон от {user_id} успешно обработан")
+            else:
+                logger.error(f"❌ Ошибка API: статус {response.status_code}")
+                await status_message.edit_text(
+                    f"❌ Ошибка анализа сна (код: {response.status_code})"
+                )
+                
+        except requests.exceptions.Timeout:
+            logger.error("❌ Таймаут запроса к Django")
+            await status_message.edit_text(
+                "❌ Сервер не отвечает. Попробуйте позже."
+            )
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"❌ Ошибка подключения: {e}")
+            await status_message.edit_text(
+                "❌ Не удалось подключиться к серверу. Проверьте, что Django запущен."
+            )
+        except Exception as e:
+            logger.error(f"❌ Ошибка при запросе: {e}")
+            await status_message.edit_text(
+                "❌ Ошибка при обработке сна. Попробуйте позже."
             )
             
-            await status_message.delete()
-            logger.info(f"Голосовой сон от {user_id} успешно обработан")
-        else:
-            await status_message.edit_text("❌ Ошибка анализа сна")
-            
     except Exception as e:
-        logger.error(f"Ошибка обработки голосового: {e}")
-        await status_message.edit_text(
-            "❌ Произошла ошибка при обработке голосового сообщения"
+        logger.error(f"Ошибка обработки голосового: {e}", exc_info=True)
+        await update.message.reply_text(
+            "❌ Произошла ошибка при обработке голосового сообщения\n\n"
+            "Попробуйте отправить сон текстом."
         )
+        await status_message.delete()
         
     finally:
         if 'audio_path' in locals():
