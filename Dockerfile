@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Копируем requirements и устанавливаем зависимости
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements_min.txt .
+RUN pip install --no-cache-dir -r requirements_min.txt
 
 # Копируем весь проект
 COPY . .

@@ -36,10 +36,10 @@ logger = logging.getLogger(__name__)
 
 # ************** На локальном ******************
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-DJANGO_API_URL = "http://127.0.0.1:8000/api/create-dream/"
-DJANGO_API_BASE = "http://127.0.0.1:8000/api/"
-USER_DREAMS_URL = "http://127.0.0.1:8000/api/user-dreams/"
-LAST_DREAM_URL = "http://127.0.0.1:8000/api/last-dream/"
+# DJANGO_API_URL = "http://127.0.0.1:8000/api/create-dream/"
+# DJANGO_API_BASE = "http://127.0.0.1:8000/api/"
+# USER_DREAMS_URL = "http://127.0.0.1:8000/api/user-dreams/"
+# LAST_DREAM_URL = "http://127.0.0.1:8000/api/last-dream/"
 
 if os.getenv('DOCKER_ENV') == 'true':
     DJANGO_API_URL = 'http://web:8000/api/create-dream/'
@@ -47,6 +47,11 @@ if os.getenv('DOCKER_ENV') == 'true':
     USER_DREAMS_URL = 'http://web:8000/api/user-dreams/'
     LAST_DREAM_URL = 'http://web:8000/api/last-dream/'
 
+else:
+    DJANGO_API_URL = "http://127.0.0.1:8000/api/create-dream/"
+    DJANGO_API_BASE = "http://127.0.0.1:8000/api/"
+    USER_DREAMS_URL = "http://127.0.0.1:8000/api/user-dreams/"
+    LAST_DREAM_URL = "http://127.0.0.1:8000/api/last-dream/"
 
 
 if not BOT_TOKEN:
