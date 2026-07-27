@@ -7,7 +7,7 @@ class DreamSerializerTest(TestCase):
 		self.dream_data = {
 			'user_id': "123456789",
 			'text': 'Тестовый сон',
-			'interpetation': 'Тестовая интерпретация',
+			'interpretation': 'Тестовая интерпретация',
 		}
 		self.dream = Dream.objects.create(**self.dream_data)
 
@@ -20,7 +20,7 @@ class DreamSerializerTest(TestCase):
 		self.assertIn('user_id', data)
 		self.assertIn('text', data)
 		self.assertIn('created_at', data)
-		self.assertIn('interpetation', data)
+		self.assertIn('interpretation', data)
 
 	def test_serializer_create(self):
 		serializer = DreamSerializer(data={

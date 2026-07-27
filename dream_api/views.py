@@ -27,7 +27,7 @@ def create_dream(request):
     
     print(f"📥 Получен сон от {user_id}: {text[:50]}...")
     
-    dream = Dream.objects.create(user_id=user_id, text=text)
+    dream = Dream.objects.create(user_id=str(user_id), text=text)
     
     try:
         client_id = os.getenv('GIGACHAT_CLIENT_ID')
@@ -113,7 +113,7 @@ def create_dream(request):
 @permission_classes([AllowAny])
 def user_dreams(request):
     user_id = request.GET.get('user_id')
-    dreams = Dream.objects.filter(user_id=user_id).order_by('-created_at')[:10]
+    dreams = Dream.objects.filter(user_id=str(user_id)).order_by('-created_at')[:10]
     serializer = DreamSerializer(dreams, many=True)
     return Response(serializer.data)
 
@@ -121,7 +121,7 @@ def user_dreams(request):
 @permission_classes([AllowAny])
 def last_dream(request):
     user_id = request.GET.get('user_id')
-    dream = Dream.objects.filter(user_id=user_id).order_by('-created_at').first()
+    dream = Dream.objects.filter(user_id=str(user_id)).order_by('-created_at').first()
     if dream:
         serializer = DreamSerializer(dream)
         return Response(serializer.data)

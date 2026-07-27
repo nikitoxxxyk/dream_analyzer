@@ -41,5 +41,16 @@ class DreamAPITest(TestCase):
         
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 		self.assertEqual(len(response.data), 1)
-		self.assertEqual(response.data[0]['text'], 'Тестовый сон')		
+		self.assertEqual(response.data[0]['text'], 'Сон через API клиента')		
 
+	def test_get_last_dream(self):
+		Dream.objects.create(
+			user_id="123456789",
+            text="Новый сон"
+		)
+
+		url = reverse('last_dream')
+		response = self.client.get(url, {'user_id': '123456789'})
+        
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(response.data['text'], 'Новый сон')
