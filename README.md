@@ -36,25 +36,32 @@ Dream Analyzer — это сервис, который помогает поль
 
 ```bash
 # 1. Клонируйте репозиторий
-git clone https://github.com/ваш-ник/dream_analyzer.git
+git clone https://github.com/nikitoxxxyk/dream_analyzer.git
 cd dream_analyzer
 
 # 2. Создайте виртуальное окружение
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+Для Windows: python -m venv venv
+Для Mac/Linux: python3 -m venv venv
 
-# 3. Установите зависимости
+# 3. Активируйте виртуальное окружение
+Windows: venv\Scripts\activate
+Mac/Linux: source venv/bin/activate
+
+# 4. Установите зависимости
 pip install -r requirements.txt
 
-# 4. Настройте .env
+# 5. Настройте .env
 cp .env.example .env
 # Заполните BOT_TOKEN, GIGACHAT_CLIENT_ID, GIGACHAT_CLIENT_SECRET
 
-# 5. Примените миграции
+# 6. Примените миграции
 python manage.py migrate
 
-# 6. Запустите Django-сервер
+# 7. Запустите Django-сервер
 python manage.py runserver
 
-# 7. В отдельном терминале запустите бота
+# 8. В отдельном терминале запустите бота
 python bot.py
+
+** 🐳 Через Docker и Docker-compose
+
