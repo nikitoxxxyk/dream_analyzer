@@ -30,9 +30,9 @@ Dream Analyzer — это сервис, который помогает поль
 | **Контейнеризация** | Docker, Docker Compose |
 | **Тестирование** | Django Test Framework, pytest |
 
-* ❔Как запустить проект
+#❔Как запустить проект
 
-** Запуск локально через npm
+## Запуск локально через npm
 
 ```bash
 # 1. Клонируйте репозиторий
@@ -62,6 +62,34 @@ python manage.py runserver
 
 # 8. В отдельном терминале запустите бота
 python bot.py
+```
 
-** 🐳 Через Docker и Docker-compose
+## 🐳 Через Docker и Docker-compose
+``` bash
+# 1. Соберите и запустите контейнеры
+docker-compose up -d --build
+
+# 2. Проверьте статус
+docker-compose ps
+
+# 3. Если хотите проверить все контейнеры, включая незапущенные
+docker-compose ps -a
+
+# 4. Просмотреть логи
+docker-compose logs -f
+
+# 5. Остановить контейнер
+docker-compose down
+```
+
+# ✅ Тестирование проекта
+``` bash
+python manage.py test # Тестировка всего проекта
+
+# API
+python manage.py test dream_api.test_api
+
+# Веб-приложение
+python manage.py test dream_web.tests
+```
 
